@@ -1,6 +1,16 @@
-# Payload Blank Template
+# PayloadCMS + LangChain Integration POC
 
-This template comes configured with the bare minimum to get started on anything you need.
+This project is a proof of concept (POC) that demonstrates the powerful integration between PayloadCMS and LangChain. The goal is to create a framework that enables rapid development of AI agents by leveraging the best of both worlds:
+
+- **PayloadCMS**: Provides a robust content management system with a beautiful admin UI, flexible data modeling, and powerful API capabilities
+- **LangChain**: Offers a comprehensive framework for building AI applications with language models
+
+This integration allows developers to:
+- Quickly create and manage AI agents through an intuitive admin interface
+- Store and version agent configurations, prompts, and settings in a structured way
+- Leverage PayloadCMS's built-in authentication and access control for agent management
+- Utilize LangChain's extensive toolkit for building sophisticated AI applications
+- Deploy agents with minimal configuration while maintaining full control over their behavior
 
 ## Quick start
 
@@ -51,6 +61,26 @@ See the [Collections](https://payloadcms.com/docs/configuration/collections) doc
 - #### Media
 
   This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
+
+### Migrations
+
+Payload provides a powerful migration system to help you manage database schema changes over time. Here's how to work with migrations:
+
+1. **Creating Migrations**
+   - Run `pnpm payload migrate:create` to create a new migration file
+   - This will generate a timestamped file in the `src/migrations` directory
+
+2. **Running Migrations**
+   - Use `pnpm payload migrate` to run all pending migrations
+   - Use `pnpm payload migrate:status` to check the status of migrations
+   - Use `pnpm payload migrate:fresh` to reset the database and run all migrations
+
+3. **Migration Files**
+   - Each migration file exports `up` and `down` functions
+   - The `up` function is run when applying the migration
+   - The `down` function is run when rolling back the migration
+
+For more details, check out the [Migrations Documentation](https://payloadcms.com/docs/database/overview#migrations).
 
 ### Docker
 

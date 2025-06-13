@@ -6,9 +6,6 @@
 .pnp.js
 .yarn/install-state.gz
 
-/.idea/*
-!/.idea/runConfigurations
-
 # testing
 /coverage
 
@@ -29,7 +26,10 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env*.local
+.env.development.local
+.env.production.local
 
 # vercel
 .vercel
@@ -37,6 +37,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.idea/*
+!/.idea/runConfigurations
+.vscode/
+*.swp
+*.swo
 
 .env
 
