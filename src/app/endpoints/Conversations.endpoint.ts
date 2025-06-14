@@ -3,7 +3,6 @@ import { OpenAIModel } from '../langchain/models/OpenAIModel'
 import { AgentFactory } from '../langchain/factory/AgentFactory'
 import { ConversationMemory } from '../langchain/memory/ConversationMemory'
 import { generateTools } from '../langchain/tools'
-import { Tool } from '@langchain/core/tools'
 import {
   AIMessage,
   BaseMessage,
@@ -47,16 +46,28 @@ export const startConversation = async (req: PayloadRequest) => {
     const openAIModel = new OpenAIModel()
     const agent = AgentFactory.createAgent(openAIModel, generateTools(req))
     const memory = new ConversationMemory(openAIModel.getModel())
+
+    const systemMessage = `Eres un asistente de gestion de proyectos, tienes acceso a herramientas para gestionar proyectos, usuarios, tareas, etc.
+      El flujo es el siguiente:
+      - El usuario te pide crear un repositorio en GitHub
+      - Tu creas un repositorio en GitHub
+      - El usuario te pide crear un bucket en AWS
+      - Tu creas un bucket en AWS
+      - El usuario te pide crear un workflow en GitHub
+      - Tu creas un workflow en GitHub
+      El workflow debe tener los siguientes pasos:
+      - Instalar dependencias
+      - Build del proyecto
+      - Deploy del proyecto y subirlo a S3
+      `
+    await memory.addMessage(systemMessage, 'system')
     await memory.addMessage(message, 'user')
 
+    // Verificar que la memoria tenga el contexto necesario
+    const context = await memory.getContext()
+
     const stream = await agent.stream({
-      messages: [
-        // TODO: Add context to the system message dynamically
-        new SystemMessage(
-          'Eres un asistente de gestion de proyectos, tienes acceso a herramientas para gestionar proyectos, usuarios, tareas, etc.',
-        ),
-        new HumanMessage(message),
-      ],
+      messages: context.chat_history,
     })
 
     const streamService = new StreamService({
@@ -88,15 +99,16 @@ export const startConversation = async (req: PayloadRequest) => {
     })
 
     return streamService.createResponse(stream)
-  } catch (_) {
-    throw new APIError('Error starting conversation', 400, null, true)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.error('Error en startConversation:', error)
+    throw new APIError(error?.message || 'Error starting conversation', 400, null, true)
   }
 }
 
 export const chatConversation = async (req: PayloadRequest) => {
   try {
     let data: { [key: string]: string } = {}
-
     if (typeof req.json === 'function') {
       data = await req.json()
     }
@@ -113,34 +125,27 @@ export const chatConversation = async (req: PayloadRequest) => {
     }
 
     const openAIModel = new OpenAIModel()
-    const tools: Tool[] = []
-    const agent = AgentFactory.createAgent(openAIModel, tools)
+    const agent = AgentFactory.createAgent(openAIModel, generateTools(req))
+    const memory = new ConversationMemory(openAIModel.getModel())
 
-    const result = await agent.stream({
-      messages: [
-        ...(conversation.messages || []).map((msg) => {
-          if (msg.role === 'user') return new HumanMessage(msg.content)
-          if (msg.role === 'assistant') return new AIMessage(msg.content)
-          if (msg.role === 'system') return new SystemMessage(msg.content)
-          if (msg.role === 'tool')
-            return new ToolMessage({
-              content: msg.content,
-              tool_call_id: msg.id || 'default',
-            })
-          return new HumanMessage(msg.content)
-        }),
-        new HumanMessage(message),
-      ],
+    for (const msg of conversation.messages || []) {
+      if (msg.role !== 'tool') {
+        await memory.addMessage(msg.content, msg.role)
+      }
+    }
+    await memory.addMessage(message, 'user')
+
+    const { chat_history: messages } = await memory.getContext()
+
+    const stream = await agent.stream({
+      messages,
     })
 
     const streamService = new StreamService({
       onComplete: async (messages) => {
-        let fullResponse = ''
-        for (const msg of messages) {
-          if (msg.lc_kwargs.content) {
-            fullResponse += msg.lc_kwargs.content
-          }
-        }
+        const transformedMessage = messages
+          .filter((message) => message.lc_kwargs.content)
+          .map(baseMessageToRoleContent)
 
         await req.payload.update({
           collection: 'conversations',
@@ -149,15 +154,16 @@ export const chatConversation = async (req: PayloadRequest) => {
             messages: [
               ...(conversation.messages || []),
               { role: 'user', content: message },
-              { role: 'assistant', content: fullResponse },
+              ...transformedMessage.slice(-1), // Solo agregamos el último mensaje del asistente
             ],
           },
         })
       },
     })
 
-    return streamService.createResponse(result)
-  } catch (_) {
-    throw new APIError('Conversation not found', 400, null, true)
+    return streamService.createResponse(stream)
+  } catch (error: any) {
+    console.error('Error en chatConversation:', error)
+    throw new APIError(error?.message || 'Error en la conversación', 400, null, true)
   }
 }

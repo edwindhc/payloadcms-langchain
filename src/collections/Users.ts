@@ -1,4 +1,6 @@
-import type { CollectionConfig } from 'payload'
+import { githubAuth } from '@/app/endpoints/Auth.endpoint'
+import { createGitHubRepo } from '@/app/endpoints/Github.endpoint'
+import { type CollectionConfig } from 'payload'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -9,5 +11,17 @@ export const Users: CollectionConfig = {
   fields: [
     // Email added by default
     // Add more fields as needed
+  ],
+  endpoints: [
+    {
+      path: '/auth/github/callback',
+      method: 'post',
+      handler: githubAuth,
+    },
+    {
+      path: '/github/create-repo',
+      method: 'post',
+      handler: createGitHubRepo,
+    },
   ],
 }

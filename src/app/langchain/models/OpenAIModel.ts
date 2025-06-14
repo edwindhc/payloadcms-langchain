@@ -5,7 +5,7 @@ import { ChatOpenAI } from '@langchain/openai'
 export class OpenAIModel extends BaseLLM {
   constructor() {
     const model = new ChatOpenAI({
-      modelName: 'gpt-4',
+      modelName: 'gpt-4o-mini',
       temperature: 0.7,
       apiKey: process.env.OPENAI_API_KEY,
     })

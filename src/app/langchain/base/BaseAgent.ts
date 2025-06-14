@@ -2,6 +2,8 @@ import { Tool } from '@langchain/core/tools'
 import { BaseMessage, MessageFieldWithRole } from '@langchain/core/messages'
 import { AgentAction, AgentFinish } from '@langchain/core/agents'
 import { HumanMessage, AIMessage, SystemMessage, ToolMessage } from '@langchain/core/messages'
+import { MemoryVariables } from '@langchain/core/memory'
+import { ConversationMemory } from '../memory/ConversationMemory'
 
 export type Message = HumanMessage | AIMessage | SystemMessage | ToolMessage
 

@@ -2,6 +2,9 @@ import { tool, Tool } from '@langchain/core/tools'
 import { PayloadRequest } from 'payload'
 import z from 'zod'
 import { userTools } from './Users'
+import { createViteProjectTool } from './GenerateReactProject'
+import { githubWorkflowTools } from './GithubWorkflow'
+import { createS3BucketTool } from './CreateBucket'
 
 type ToolDef<T extends z.ZodSchema> = {
   name: string
@@ -15,6 +18,10 @@ export const createTools = <T extends ToolDef<z.ZodSchema>[]>(
   defs: T,
 ): Tool[] => defs.map((d) => tool(d.handler(req), d) as unknown as Tool)
 
-const getTools = [...userTools]
-
+const getTools = [
+  ...userTools,
+  ...createViteProjectTool,
+  ...githubWorkflowTools,
+  createS3BucketTool,
+]
 export const generateTools = (req: PayloadRequest) => createTools(req, getTools)

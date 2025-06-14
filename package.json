@@ -16,6 +16,7 @@
     "seed": "npm run payload migrate:fresh"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.828.0",
     "@langchain/community": "^0.3.45",
     "@langchain/core": "^0.3.57",
     "@langchain/langgraph": "^0.2.73",
@@ -29,6 +30,7 @@
     "@payloadcms/ui": "3.39.1",
     "cross-env": "^7.0.3",
     "graphql": "^16.8.1",
+    "libsodium-wrappers": "^0.7.15",
     "next": "15.3.0",
     "payload": "3.39.1",
     "react": "19.1.0",
@@ -38,6 +40,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
+    "@types/libsodium-wrappers": "^0.7.14",
     "@types/node": "^22.5.4",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.2",
