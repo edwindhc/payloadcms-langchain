@@ -1,5 +1,22 @@
-import { BaseMessage } from '@langchain/core/messages'
+import {
+  AIMessage,
+  BaseMessage,
+  HumanMessage,
+  SystemMessage,
+  ToolMessage,
+} from '@langchain/core/messages'
 import { TextEncoder } from 'util'
+
+const getType = (message: BaseMessage) => {
+  let role: 'user' | 'system' | 'assistant' | 'tool' | 'complete' | 'done'
+
+  if (message instanceof SystemMessage) role = 'system'
+  else if (message?.kwargs?.tool_call_id) role = 'tool'
+  else if (message instanceof HumanMessage) role = 'user'
+  else if (message instanceof AIMessage) role = 'assistant'
+  else role = 'user'
+  return role
+}
 
 interface StreamConfig {
   onChunk?: (content: BaseMessage) => void
@@ -35,7 +52,10 @@ export class StreamService {
               const content = chunk.messages[chunk.messages.length - 1]
               messages = chunk.messages
 
-              const jsonResponse = JSON.stringify({ content })
+              const jsonResponse = JSON.stringify({
+                content,
+                type: getType(content),
+              })
               controller.enqueue(this.encoder.encode(`data: ${jsonResponse}\n\n`))
 
               this.config.onChunk?.(content)
@@ -43,6 +63,9 @@ export class StreamService {
           }
 
           this.config.onComplete?.(messages)
+          controller.enqueue(
+            this.encoder.encode(`data: ${JSON.stringify({ agent: { type: 'Done' } })}`),
+          )
           controller.close()
         } catch (error) {
           this.config.onError?.(error)

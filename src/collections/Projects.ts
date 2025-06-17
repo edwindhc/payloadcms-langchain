@@ -1,5 +1,9 @@
 import type { CollectionConfig } from 'payload'
+import crypto from 'crypto'
 
+const generateRandomCode = () => {
+  return crypto.randomBytes(4).toString('hex') // 8 caracteres
+}
 const Projects: CollectionConfig = {
   slug: 'projects',
   admin: {
@@ -9,18 +13,31 @@ const Projects: CollectionConfig = {
     {
       name: 'code',
       type: 'text',
-      required: true,
+      required: false,
       unique: true,
       index: true,
     },
     {
-      name: 'status',
-      type: 'text',
-      required: true,
+      name: 'autoGenerateCode',
+      type: 'checkbox',
+      label: 'Generar código automáticamente',
+      defaultValue: true,
     },
     {
-      name: 'firmRate',
-      type: 'text',
+      name: 'status',
+      label: 'Estado del proyecto',
+      type: 'select',
+      defaultValue: 'INPROGRESS',
+      options: [
+        {
+          label: 'En progreso',
+          value: 'INPROGRESS',
+        },
+        {
+          label: 'Finalizado',
+          value: 'COMPLETED',
+        },
+      ],
       required: true,
     },
     {
@@ -37,12 +54,17 @@ const Projects: CollectionConfig = {
       name: 'comment',
       type: 'textarea',
     },
-    {
-      name: 'manager',
-      type: 'text',
-      required: true,
-    },
   ],
+  hooks: {
+    beforeChange: [
+      ({ data, operation }) => {
+        if (operation === 'create' && !data.code && data.autoGenerateCode !== false) {
+          data.code = generateRandomCode()
+        }
+        return data
+      },
+    ],
+  },
 }
 
 export default Projects

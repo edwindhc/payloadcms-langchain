@@ -20,7 +20,7 @@ function baseMessageToRoleContent(message: BaseMessage): {
   role: 'user' | 'system' | 'assistant' | 'tool'
   content: string
 } {
-  let role: 'user' | 'system' | 'assistant' | 'tool'
+  let role: 'user' | 'system' | 'assistant' | 'tool' | 'complete'
 
   if (message instanceof SystemMessage) role = 'system'
   else if (message instanceof HumanMessage) role = 'user'
@@ -59,6 +59,9 @@ export const startConversation = async (req: PayloadRequest) => {
       - Instalar dependencias
       - Build del proyecto
       - Deploy del proyecto y subirlo a S3
+
+      antes de empezara ejecutar una acción o una tool, debes decir lo que planeas hacer.
+      Si tienes tokens o credenciales disponibles predeterminados, debes usarlos y no preguntar por ellos.
       `
     await memory.addMessage(systemMessage, 'system')
     await memory.addMessage(message, 'user')
@@ -69,9 +72,9 @@ export const startConversation = async (req: PayloadRequest) => {
     const stream = await agent.stream({
       messages: context.chat_history,
     })
-
     const streamService = new StreamService({
       onComplete: async (messages) => {
+        console.log(messages, 'messages')
         const transformedMessage = messages
           .filter((message) => message.lc_kwargs.content)
           .map(baseMessageToRoleContent)

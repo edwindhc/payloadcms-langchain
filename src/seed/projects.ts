@@ -1,22 +1,26 @@
 import { Payload } from 'payload'
 
+type ProjectStatus = 'INPROGRESS' | 'COMPLETED'
+
 export const seedProjects = async (payload: Payload): Promise<void> => {
-  const projects = [
+  const projects: Array<{
+    name: string
+    description: string
+    status: ProjectStatus
+    code: string
+  }> = [
     {
-      code: 'PROJ001',
       name: 'E-commerce Platform',
       description: 'Modern e-commerce platform development',
-      status: 'ACTIVE',
-      firmRate: '100',
-      manager: 'John Doe',
+      status: 'INPROGRESS',
+      code: 'PROJ001',
+      // code is optional; will be auto-generated
     },
     {
-      code: 'PROJ002',
       name: 'Mobile App',
       description: 'Cross-platform mobile application',
-      status: 'PLANNING',
-      firmRate: '90',
-      manager: 'Jane Smith',
+      status: 'COMPLETED',
+      code: 'PROJ002',
     },
   ]
 

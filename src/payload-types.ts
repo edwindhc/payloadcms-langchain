@@ -131,6 +131,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  name?: string | null;
   projects?:
     | {
         proyecto: number | Project;
@@ -154,13 +155,12 @@ export interface User {
  */
 export interface Project {
   id: number;
-  code: string;
-  status: string;
-  firmRate: string;
+  code?: string | null;
+  autoGenerateCode?: boolean | null;
+  status: 'INPROGRESS' | 'COMPLETED';
   name: string;
   description: string;
   comment?: string | null;
-  manager: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -345,6 +345,7 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
   projects?:
     | T
     | {
@@ -385,12 +386,11 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface ProjectsSelect<T extends boolean = true> {
   code?: T;
+  autoGenerateCode?: T;
   status?: T;
-  firmRate?: T;
   name?: T;
   description?: T;
   comment?: T;
-  manager?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -22,10 +22,9 @@ export class ConversationMemory {
   }
 
   async addMessage(message: string, role: 'user' | 'assistant' | 'system') {
-    await this.memory.saveContext(
-      { input: message },
-      { output: role === 'user' ? 'Assistant: ' : 'User: ' },
-    )
+    if (!message) return
+
+    await this.memory.saveContext({ input: message }, { output: role === 'user' ? '' : 'User: ' })
   }
 
   async getContext() {
